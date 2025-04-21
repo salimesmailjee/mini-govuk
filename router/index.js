@@ -126,20 +126,22 @@ app.use(async (req, res, next) => {
 });
 
 // Regular route handling for non-admin routes
-// In router/index.js - Replace or simplify the route handler
-
 app.get('/:path(*)', async (req, res) => {
   const path = req.params.path || '';
   console.log(`Router handling GET request for path: "${path}"`);
+  
+  let targetUrl;
   
   // Special handling for homepage
   if (path === '') {
     targetUrl = 'http://frontend:3001/';
   } 
-  // Special handling for search
-  else if (path.startsWith('search')) {
+  // Special handling for search - ensure query parameters are preserved
+  else if (path === 'search') {
+    console.log('Search request detected with query string:', req.url);
     const queryString = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
     targetUrl = `http://frontend:3001/search${queryString}`;
+    console.log('Forwarding to:', targetUrl);
   }
   // Default handling
   else {
@@ -149,22 +151,30 @@ app.get('/:path(*)', async (req, res) => {
   console.log(`Proxying request to: ${targetUrl}`);
   
   try {
-    // Very basic Axios request with minimal configuration
+    // Make the request to the frontend service
     const response = await axios({
       method: 'get',
       url: targetUrl,
-      // Don't transform response data in any way
+      // Don't transform response data
       transformResponse: [(data) => data],
-      // Longer timeout to help debugging
+      // Set longer timeout
       timeout: 10000,
-      // Accept all status codes to handle them manually
-      validateStatus: () => true
+      // Accept all status codes
+      validateStatus: () => true,
+      // Forward headers from the original request
+      headers: {
+        ...req.headers,
+        host: 'frontend:3001'
+      }
     });
+    
+    // Log the response status
+    console.log(`Received ${response.status} response from frontend for path: ${path}`);
     
     // Send status code from the proxied response
     res.status(response.status);
     
-    // Set basic content-type headers
+    // Copy important headers from the response
     if (response.headers['content-type']) {
       res.setHeader('Content-Type', response.headers['content-type']);
     }

@@ -19,6 +19,8 @@ app.get('/', async (req, res) => {
 // Admin routes should be defined before the wildcard content route
 // Admin page - list all content with edit links
 app.get('/admin', async (req, res) => {
+  console.log('[FRONTEND] Admin request received:');
+
   try {
     const response = await axios.get('http://publishing-api:3000/content');
     res.render('admin', { 
@@ -72,29 +74,6 @@ app.get('/admin/edit/:path', async (req, res) => {
   }
 });
 
-// View content page
-app.get('/:path', async (req, res) => {
-  try {
-    const path = req.params.path;
-    const response = await axios.get(`http://publishing-api:3000/published-content/${path}`);
-    const content = response.data.content;
-    
-    // Render different templates based on document_type
-    if (content.document_type === 'simple-page') {
-      res.render('content-simple-page', { content });
-    } else if (content.document_type === 'guide') {
-      res.render('content-guide', { content });
-    } else {
-      res.render('error', { error: 'Unknown content type' });
-    }
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      return res.status(404).render('error', { error: 'Page not found' });
-    }
-    res.render('error', { error: error.message });
-  }
-});
-
 // Save content based on document type
 app.post('/admin/save/:type', async (req, res) => {
   try {
@@ -142,6 +121,8 @@ app.post('/admin/publish/:id', async (req, res) => {
 
 // Search
 app.get('/search', async (req, res) => {
+  console.log('[FRONTEND] Search request received:', req.query);
+
   try {
     const query = req.query.q || '';
     const page = req.query.page || '1';
@@ -207,6 +188,29 @@ app.get('/search', async (req, res) => {
   } catch (error) {
     console.error('Search error:', error.message);
     res.render('error', { error: 'Error processing search request. Please try again.' });
+  }
+});
+
+// View content page
+app.get('/:path', async (req, res) => {
+  try {
+    const path = req.params.path;
+    const response = await axios.get(`http://publishing-api:3000/published-content/${path}`);
+    const content = response.data.content;
+    
+    // Render different templates based on document_type
+    if (content.document_type === 'simple-page') {
+      res.render('content-simple-page', { content });
+    } else if (content.document_type === 'guide') {
+      res.render('content-guide', { content });
+    } else {
+      res.render('error', { error: 'Unknown content type' });
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return res.status(404).render('error', { error: 'Page not found' });
+    }
+    res.render('error', { error: error.message });
   }
 });
 
