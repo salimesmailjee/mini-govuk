@@ -68,7 +68,38 @@ app.use(async (req, res, next) => {
       if (req.method === 'GET') {
         response = await axios.get(targetUrl, requestConfig);
       } else if (req.method === 'POST') {
-        response = await axios.post(targetUrl, req.body, requestConfig);
+        // Get the Content-Type header
+        const contentType = req.headers['content-type'] || '';
+        
+        // Create appropriate request options
+        let requestConfig = {
+          headers: {
+            ...req.headers,
+            host: 'frontend:3001'
+          },
+          validateStatus: (status) => status >= 200 && status < 500,
+          responseType: 'text'
+        };
+        
+        // If this is a form submission, properly format the data
+        if (contentType.includes('application/x-www-form-urlencoded')) {
+          console.log('Form submission detected, formatting data properly for frontend');
+          // Convert to URLSearchParams format which axios will properly send as form data
+          const params = new URLSearchParams();
+          for (const [key, value] of Object.entries(req.body)) {
+            if (Array.isArray(value)) {
+              // Handle array values (like multiple parts in a guide)
+              value.forEach(item => params.append(key, item));
+            } else {
+              params.append(key, value);
+            }
+          }
+          // Send as URLSearchParams which axios will encode properly
+          response = await axios.post(targetUrl, params, requestConfig);
+        } else {
+          // For JSON or other content types, send as is
+          response = await axios.post(targetUrl, req.body, requestConfig);
+        }
       }
       
       // Set response status and headers

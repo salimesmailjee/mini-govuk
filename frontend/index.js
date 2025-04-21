@@ -95,61 +95,6 @@ app.get('/:path', async (req, res) => {
   }
 });
 
-// Admin page - list all content with edit links
-app.get('/admin', async (req, res) => {
-  try {
-    const response = await axios.get('http://publishing-api:3000/content');
-    res.render('admin', { 
-      contents: response.data.contents,
-      // Add a simple helper to format dates
-      formatDate: (date) => date ? new Date(date).toLocaleString() : 'Not published'
-    });
-  } catch (error) {
-    res.render('error', { error: error.message });
-  }
-});
-
-// New content form with document type selection
-app.get('/admin/new', (req, res) => {
-  res.render('select-type');
-});
-
-// New content form for specific document type
-app.get('/admin/new/:type', (req, res) => {
-  const type = req.params.type;
-  let content = { document_type: type, path: '' };
-  
-  if (type === 'simple-page') {
-    content.title = '';
-    content.body = '';
-  } else if (type === 'guide') {
-    content.title = '';
-    content.introduction = '';
-    content.parts = [{ title: '', body: '' }];
-  }
-  
-  res.render(`edit-${type}`, { content, isNew: true });
-});
-
-// Edit content form
-app.get('/admin/edit/:path', async (req, res) => {
-  try {
-    const path = req.params.path;
-    const response = await axios.get(`http://publishing-api:3000/content/${path}`);
-    const content = response.data.content;
-    
-    if (content.document_type === 'simple-page') {
-      res.render('edit-simple-page', { content, isNew: false });
-    } else if (content.document_type === 'guide') {
-      res.render('edit-guide', { content, isNew: false });
-    } else {
-      res.render('error', { error: 'Unknown content type' });
-    }
-  } catch (error) {
-    res.render('error', { error: error.message });
-  }
-});
-
 // Save content based on document type
 app.post('/admin/save/:type', async (req, res) => {
   try {
