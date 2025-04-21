@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= content.title %> - Mini GOV.UK</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0b0c0c; }
+    .introduction { font-size: 19px; margin-bottom: 30px; }
+    .contents { 
+      background: #f3f2f1; 
+      padding: 15px; 
+      margin-bottom: 30px; 
+      border-radius: 5px;
+    }
+    .contents h2 { font-size: 19px; margin-top: 0; }
+    .part { margin-bottom: 40px; border-top: 1px solid #b1b4b6; padding-top: 20px; }
+    a { color: #1d70b8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <a href="/">← Back to home</a>
+  <h1><%= content.title %></h1>
+  
+  <div class="introduction">
+    <%= content.introduction %>
+  </div>
+  
+  <div class="contents">
+    <h2>Contents</h2>
+    <ol>
+      <% content.parts.forEach((part, index) => { %>
+        <li><a href="#part<%= index + 1 %>"><%= part.title %></a></li>
+      <% }) %>
+    </ol>
+  </div>
+  
+  <% content.parts.forEach((part, index) => { %>
+    <div class="part" id="part<%= index + 1 %>">
+      <h2><%= part.title %></h2>
+      <div class="part-content">
+        <%= part.body %>
+      </div>
+    </div>
+  <% }) %>
+  
+  <small>Last updated: <%= new Date(content.updatedAt).toLocaleString() %></small>
+</body>
+</html>

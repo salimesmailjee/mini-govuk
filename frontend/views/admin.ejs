@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin - Mini GOV.UK</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0b0c0c; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #b1b4b6; }
+    th { background-color: #f3f2f1; }
+    a { color: #1d70b8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .button { 
+      display: inline-block;
+      padding: 8px 12px;
+      background-color: #00703c;
+      color: white;
+      text-decoration: none;
+      border-radius: 3px;
+      margin-right: 5px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .draft { color: #d4351c; font-weight: bold; }
+    .published { color: #00703c; }
+  </style>
+</head>
+<body>
+  <h1>Content Admin</h1>
+  <a href="/admin/new" class="button" style="margin-bottom: 20px; display: inline-block;">Create New Page</a>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Last Updated</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% contents.forEach(content => { %>
+        <tr>
+          <td><%= content.title %></td>
+          <td><%= content.document_type === 'simple-page' ? 'Page' : 'Guide' %></td>
+          <td class="<%= content.state %>"><%= content.state %></td>
+          <td><%= formatDate(content.updatedAt) %></td>
+          <td>
+            <a href="/admin/edit/<%= content.path %>" class="button">Edit</a>
+            <a href="/<%= content.path %>" target="_blank" class="button" style="background-color: #1d70b8;">View</a>
+            <% if (content.state === 'draft') { %>
+              <form method="post" action="/admin/publish/<%= content._id %>" style="display: inline;">
+                <button type="submit" class="button" style="background-color: #d4351c;">Publish</button>
+              </form>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</body>
+</html>

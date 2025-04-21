@@ -1,0 +1,14 @@
+{
+  "name": "publishing-api",
+  "version": "1.0.0",
+  "description": "Mini GOV.UK Publishing API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.13.7",
+    "body-parser": "^1.19.0"
+  }
+}

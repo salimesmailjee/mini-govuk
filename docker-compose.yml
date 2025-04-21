@@ -1,0 +1,61 @@
+version: '3'
+services:
+  # Content Database
+  content-db:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - content-data:/data/db
+
+  # Publishing API
+  publishing-api:
+    image: node:14
+    working_dir: /app
+    volumes:
+      - ./publishing-api:/app
+    ports:
+      - "3000:3000"
+    command: bash -c "npm install && npm start"
+    depends_on:
+      - content-db
+
+  # Frontend
+  frontend:
+    image: node:14
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3001:3001"
+    command: bash -c "npm install && npm start"
+    depends_on:
+      - publishing-api
+
+  # Router
+  router:
+    image: node:14
+    working_dir: /app
+    volumes:
+      - ./router:/app
+    ports:
+      - "3002:3002"
+    command: bash -c "npm install && npm start"
+    depends_on:
+      - frontend
+      - publishing-api
+
+  # Search API
+  search-api:
+    image: node:14
+    working_dir: /app
+    volumes:
+      - ./search-api:/app
+    ports:
+      - "3003:3003"
+    command: bash -c "npm install && npm start"
+    depends_on:
+      - publishing-api
+
+volumes:
+  content-data:

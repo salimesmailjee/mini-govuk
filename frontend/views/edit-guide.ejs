@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= isNew ? 'New' : 'Edit' %> Guide - Mini GOV.UK</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0b0c0c; }
+    label { display: block; margin-top: 20px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 5px; }
+    textarea { min-height: 100px; }
+    .part { 
+      background: #f3f2f1; 
+      padding: 20px; 
+      margin-top: 20px; 
+      border-radius: 5px; 
+    }
+    .part h3 { margin-top: 0; }
+    .button { 
+      display: inline-block;
+      padding: 10px 15px;
+      background-color: #00703c;
+      color: white;
+      text-decoration: none;
+      border-radius: 3px;
+      margin-top: 20px;
+      border: none;
+      cursor: pointer;
+    }
+    .add-button {
+      background-color: #1d70b8;
+      margin-bottom: 20px;
+    }
+  </style>
+  <script>
+    function addPart() {
+      const partsContainer = document.getElementById('parts-container');
+      const partIndex = document.querySelectorAll('.part').length;
+      
+      const partHtml = `
+        <div class="part">
+          <h3>Part ${partIndex + 1}</h3>
+          <label for="partTitle${partIndex}">Part Title</label>
+          <input type="text" id="partTitle${partIndex}" name="partTitles" required>
+          
+          <label for="partBody${partIndex}">Part Content</label>
+          <textarea id="partBody${partIndex}" name="partBodies" required></textarea>
+        </div>
+      `;
+      
+      partsContainer.insertAdjacentHTML('beforeend', partHtml);
+    }
+  </script>
+</head>
+<body>
+  <a href="/admin">← Back to admin</a>
+  <h1><%= isNew ? 'Create' : 'Edit' %> Guide</h1>
+  
+  <form action="/admin/save/guide" method="post">
+    <label for="title">Guide Title</label>
+    <input type="text" id="title" name="title" value="<%= content.title %>" required>
+    
+    <label for="path">URL Path (e.g., "how-to-apply")</label>
+    <input type="text" id="path" name="path" value="<%= content.path %>" required <%= isNew ? '' : 'readonly' %>>
+    
+    <label for="introduction">Introduction</label>
+    <textarea id="introduction" name="introduction" required><%= content.introduction %></textarea>
+    
+    <h2>Guide Parts</h2>
+    <button type="button" class="button add-button" onclick="addPart()">Add Another Part</button>
+    
+    <div id="parts-container">
+      <% if (isNew) { %>
+        <!-- Initial empty part for new guides -->
+        <div class="part">
+          <h3>Part 1</h3>
+          <label for="partTitle0">Part Title</label>
+          <input type="text" id="partTitle0" name="partTitles" required>
+          
+          <label for="partBody0">Part Content</label>
+          <textarea id="partBody0" name="partBodies" required></textarea>
+        </div>
+      <% } else { %>
+        <!-- Existing parts for editing -->
+        <% content.parts.forEach((part, index) => { %>
+          <div class="part">
+            <h3>Part <%= index + 1 %></h3>
+            <label for="partTitle<%= index %>">Part Title</label>
+            <input type="text" id="partTitle<%= index %>" name="partTitles" value="<%= part.title %>" required>
+            
+            <label for="partBody<%= index %>">Part Content</label>
+            <textarea id="partBody<%= index %>" name="partBodies" required><%= part.body %></textarea>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+    
+    <button type="submit" class="button">Save Guide</button>
+  </form>
+</body>
+</html>

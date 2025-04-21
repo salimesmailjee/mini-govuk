@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= content.title %> - Mini GOV.UK</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0b0c0c; }
+    .content { line-height: 1.5; }
+    a { color: #1d70b8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <a href="/">← Back to home</a>
+  <h1><%= content.title %></h1>
+  <div class="content">
+    <%= content.body %>
+  </div>
+  <small>Last updated: <%= new Date(content.updatedAt).toLocaleString() %></small>
+</body>
+</html>

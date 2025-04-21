@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= isNew ? 'New' : 'Edit' %> Simple Page - Mini GOV.UK</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0b0c0c; }
+    label { display: block; margin-top: 20px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 5px; }
+    textarea { min-height: 200px; }
+    .button { 
+      display: inline-block;
+      padding: 10px 15px;
+      background-color: #00703c;
+      color: white;
+      text-decoration: none;
+      border-radius: 3px;
+      margin-top: 20px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <a href="/admin">← Back to admin</a>
+  <h1><%= isNew ? 'Create' : 'Edit' %> Simple Page</h1>
+  
+  <form action="/admin/save/simple-page" method="post">
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="<%= content.title %>" required>
+    
+    <label for="path">URL Path (e.g., "about-us")</label>
+    <input type="text" id="path" name="path" value="<%= content.path %>" required <%= isNew ? '' : 'readonly' %>>
+    
+    <label for="body">Content</label>
+    <textarea id="body" name="body" required><%= content.body %></textarea>
+    
+    <button type="submit" class="button">Save</button>
+  </form>
+</body>
+</html>

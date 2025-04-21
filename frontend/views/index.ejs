@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini GOV.UK</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0b0c0c; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin-bottom: 10px; }
+    a { color: #1d70b8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    input[type="text"] { padding: 8px; width: 300px; }
+    button { padding: 8px 16px; background: #1d70b8; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Mini GOV.UK</h1>
+  
+  <form action="/search" method="get" style="margin: 20px 0;">
+    <input type="text" name="q" placeholder="Search...">
+    <button type="submit">Search</button>
+  </form>
+  
+  <h2>All Pages</h2>
+  
+  <ul>
+    <% contents.forEach(content => { %>
+      <li>
+        <a href="/<%= content.path %>"><%= content.title %></a>
+        <small>Last updated: <%= new Date(content.updatedAt).toLocaleString() %></small>
+      </li>
+    <% }); %>
+  </ul>
+  
+  <p><a href="/admin">Admin Dashboard</a></p>
+</body>
+</html>
