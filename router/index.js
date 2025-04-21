@@ -126,47 +126,54 @@ app.use(async (req, res, next) => {
 });
 
 // Regular route handling for non-admin routes
+// In router/index.js - Replace or simplify the route handler
+
 app.get('/:path(*)', async (req, res) => {
   const path = req.params.path || '';
+  console.log(`Router handling GET request for path: "${path}"`);
   
-  // Special case for search
-  if (path.startsWith('search')) {
-    try {
-      const query = req.query.q ? `?q=${encodeURIComponent(req.query.q)}` : '';
-      const response = await axios.get(`http://frontend:3001/search${query}`);
-      return res.send(response.data);
-    } catch (error) {
-      return res.status(500).send('Error processing search request');
-    }
-  }
-  
-  // Special case for the homepage
+  // Special handling for homepage
   if (path === '') {
-    try {
-      const response = await axios.get('http://frontend:3001/');
-      return res.send(response.data);
-    } catch (error) {
-      return res.status(500).send('Error processing homepage request');
-    }
+    targetUrl = 'http://frontend:3001/';
+  } 
+  // Special handling for search
+  else if (path.startsWith('search')) {
+    const queryString = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+    targetUrl = `http://frontend:3001/search${queryString}`;
+  }
+  // Default handling
+  else {
+    targetUrl = `http://frontend:3001/${path}`;
   }
   
-  // Check if path exists in our route cache
-  const route = routeCache[path];
-  if (!route) {
-    try {
-      const response = await axios.get('http://frontend:3001/404');
-      return res.status(404).send(response.data);
-    } catch (error) {
-      return res.status(404).send('Page not found');
-    }
-  }
+  console.log(`Proxying request to: ${targetUrl}`);
   
-  // Route the request to the appropriate frontend
   try {
-    const response = await axios.get(`http://frontend:3001/${path}`);
+    // Very basic Axios request with minimal configuration
+    const response = await axios({
+      method: 'get',
+      url: targetUrl,
+      // Don't transform response data in any way
+      transformResponse: [(data) => data],
+      // Longer timeout to help debugging
+      timeout: 10000,
+      // Accept all status codes to handle them manually
+      validateStatus: () => true
+    });
+    
+    // Send status code from the proxied response
+    res.status(response.status);
+    
+    // Set basic content-type headers
+    if (response.headers['content-type']) {
+      res.setHeader('Content-Type', response.headers['content-type']);
+    }
+    
+    // Send the response directly
     return res.send(response.data);
   } catch (error) {
-    return res.status(500).send('Error processing content request');
+    console.error('Proxy error:', error.message);
+    return res.status(500).send('Service communication error');
   }
 });
 
