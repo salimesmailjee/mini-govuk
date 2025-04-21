@@ -13,6 +13,58 @@
     .result p.type { color: #505a5f; margin: 5px 0; }
     a { color: #1d70b8; text-decoration: none; }
     a:hover { text-decoration: underline; }
+    
+    /* New styles for enhanced search */
+    .search-filters {
+      margin: 15px 0;
+      padding: 15px;
+      background: #f3f2f1;
+      border-radius: 5px;
+    }
+    
+    .search-filters label {
+      margin-right: 15px;
+      cursor: pointer;
+    }
+    
+    .pagination {
+      margin-top: 20px;
+      text-align: center;
+    }
+    
+    .pagination a {
+      display: inline-block;
+      padding: 5px 10px;
+      margin: 0 2px;
+      border: 1px solid #1d70b8;
+      border-radius: 3px;
+    }
+    
+    .pagination a.active {
+      background: #1d70b8;
+      color: white;
+    }
+    
+    .highlight {
+      background-color: #ffdd00;
+      font-weight: bold;
+    }
+    
+    .search-summary {
+      margin-bottom: 20px;
+      color: #505a5f;
+    }
+    
+    .snippet {
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    
+    .updated {
+      font-size: 0.9em;
+      color: #6f777b;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -22,24 +74,88 @@
   <form action="/search" method="get">
     <input type="text" name="q" value="<%= query %>" placeholder="Search...">
     <button type="submit">Search</button>
+    
+    <div class="search-filters">
+      <label>
+        <input type="radio" name="type" value="" <%= !type ? 'checked' : '' %>>
+        All types
+      </label>
+      <label>
+        <input type="radio" name="type" value="simple-page" <%= type === 'simple-page' ? 'checked' : '' %>>
+        Pages
+      </label>
+      <label>
+        <input type="radio" name="type" value="guide" <%= type === 'guide' ? 'checked' : '' %>>
+        Guides
+      </label>
+      
+      <input type="hidden" name="page" value="1">
+      <input type="hidden" name="pageSize" value="<%= pageSize %>">
+    </div>
   </form>
   
   <% if (query) { %>
-    <p>Search results for "<%= query %>"</p>
+    <div class="search-summary">
+      <% if (total === 0) { %>
+        <p>No results found for "<%= query %>". Please try different search terms.</p>
+      <% } else { %>
+        <p>Showing <%= (page - 1) * pageSize + 1 %>-<%= Math.min(page * pageSize, total) %> 
+           of <%= total %> result<%= total !== 1 ? 's' : '' %> for "<%= query %>"</p>
+      <% } %>
+    </div>
     
-    <% if (results.length === 0) { %>
-      <p>No results found. Please try different search terms.</p>
-    <% } else { %>
-      <p><%= results.length %> result<%= results.length !== 1 ? 's' : '' %> found</p>
-      
+    <% if (results.length > 0) { %>
       <div class="results">
         <% results.forEach(result => { %>
           <div class="result">
-            <h2><a href="/<%= result.path %>"><%= result.title %></a></h2>
+            <h2><a href="/<%= result.path %>"><%- highlightQuery(result.title) %></a></h2>
             <p class="type"><%= result.type === 'simple-page' ? 'Page' : 'Guide' %></p>
+            <% if (result.snippet) { %>
+              <p class="snippet"><%- highlightQuery(result.snippet) %></p>
+            <% } %>
+            <p class="updated">Last updated: <%= formatDate(result.updatedAt) %></p>
           </div>
         <% }) %>
       </div>
+      
+      <% if (totalPages > 1) { %>
+        <div class="pagination">
+          <% if (page > 1) { %>
+            <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= page-1 %>&type=<%= type %>&pageSize=<%= pageSize %>">Previous</a>
+          <% } %>
+          
+          <% 
+            // Calculate page range to display
+            const maxPages = 5;
+            let startPage = Math.max(1, page - Math.floor(maxPages / 2));
+            let endPage = Math.min(totalPages, startPage + maxPages - 1);
+            
+            // Adjust if we're at the end
+            if (endPage - startPage + 1 < maxPages && startPage > 1) {
+              startPage = Math.max(1, endPage - maxPages + 1);
+            }
+          %>
+          
+          <% if (startPage > 1) { %>
+            <a href="/search?q=<%= encodeURIComponent(query) %>&page=1&type=<%= type %>&pageSize=<%= pageSize %>">1</a>
+            <% if (startPage > 2) { %><span>...</span><% } %>
+          <% } %>
+          
+          <% for(let i = startPage; i <= endPage; i++) { %>
+            <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= i %>&type=<%= type %>&pageSize=<%= pageSize %>" 
+               class="<%= page === i ? 'active' : '' %>"><%= i %></a>
+          <% } %>
+          
+          <% if (endPage < totalPages) { %>
+            <% if (endPage < totalPages - 1) { %><span>...</span><% } %>
+            <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= totalPages %>&type=<%= type %>&pageSize=<%= pageSize %>"><%= totalPages %></a>
+          <% } %>
+          
+          <% if (page < totalPages) { %>
+            <a href="/search?q=<%= encodeURIComponent(query) %>&page=<%= page+1 %>&type=<%= type %>&pageSize=<%= pageSize %>">Next</a>
+          <% } %>
+        </div>
+      <% } %>
     <% } %>
   <% } %>
 </body>

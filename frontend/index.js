@@ -144,15 +144,69 @@ app.post('/admin/publish/:id', async (req, res) => {
 app.get('/search', async (req, res) => {
   try {
     const query = req.query.q || '';
+    const page = req.query.page || '1';
+    const pageSize = req.query.pageSize || '10';
+    const type = req.query.type || '';
     
     if (!query) {
-      return res.render('search-results', { query, results: [] });
+      return res.render('search-results', { 
+        query, 
+        results: [], 
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+        type: '',
+        highlightQuery: (text) => text,
+        formatDate: (date) => date ? new Date(date).toLocaleString() : ''
+      });
     }
     
-    const response = await axios.get(`http://search-api:3003/search?q=${encodeURIComponent(query)}`);
-    res.render('search-results', { query, results: response.data.results });
+    // Build search URL with all parameters
+    const searchUrl = `http://search-api:3003/search?q=${encodeURIComponent(query)}${page ? `&page=${page}` : ''}${pageSize ? `&pageSize=${pageSize}` : ''}${type ? `&type=${type}` : ''}`;
+    
+    const response = await axios.get(searchUrl);
+    
+    // Function to highlight search terms in text
+    const highlightQuery = (text) => {
+      if (!text || !query) return text;
+      
+      const safeText = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const tokens = query.toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(token => token.length > 1);
+      
+      let result = safeText;
+      tokens.forEach(token => {
+        if (token.length < 2) return; // Skip very short tokens
+        const regex = new RegExp(`(${token})`, 'gi');
+        result = result.replace(regex, '<span class="highlight">$1</span>');
+      });
+      
+      return result;
+    };
+    
+    // Format date helper
+    const formatDate = (date) => {
+      if (!date) return '';
+      return new Date(date).toLocaleString();
+    };
+    
+    res.render('search-results', { 
+      query,
+      results: response.data.results,
+      total: response.data.total,
+      page: parseInt(page),
+      pageSize: parseInt(pageSize),
+      totalPages: response.data.totalPages,
+      type,
+      highlightQuery,
+      formatDate
+    });
   } catch (error) {
-    res.render('error', { error: error.message });
+    console.error('Search error:', error.message);
+    res.render('error', { error: 'Error processing search request. Please try again.' });
   }
 });
 
