@@ -85,7 +85,7 @@ This is a microservices-based content management system with four main component
 - Create in-memory search index
 - Search index management
   - Builds index from all published content
-  - Updates every 5 minutes
+  - Updates every minute
   - Creates searchable text based on content type
 - Search endpoint
   - Simple text-based search
