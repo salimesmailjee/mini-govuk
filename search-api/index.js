@@ -22,8 +22,9 @@ function tokenizeText(text) {
 
 // Function to generate a snippet of text containing search terms
 function generateSnippet(text, queryTokens, maxLength = 160) {
-  if (!text || !queryTokens || queryTokens.length === 0) {
-    return text.substring(0, maxLength) + '...';
+  if (!text) return '';
+  if (!queryTokens || queryTokens.length === 0) {
+    return text.slice(0, maxLength) + (text.length > maxLength ? '...' : '');
   }
   
   const lowerText = text.toLowerCase();
